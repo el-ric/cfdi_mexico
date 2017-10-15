@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<odoo>
+
+        <record id="view_sale_order_sat" model="ir.ui.view">
+            <field name="name">sale.order.alcomex</field>
+            <field name="model">sale.order</field>
+            <field name="type">form</field>
+            <field name="priority">1</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <field name="note" position="after">
+                    <group colspan="4">
+                    <field name="c_formapago" string="Forma de pago - Factura" widget="selection" domain="[('activo','=','true')]" required="1"/>
+                    <field name="c_metodopago" string="Método de pago - Factura" widget="selection" domain="[('activo','=','true')]"  required="1"/>
+                    <field name="c_usocfdi" string="Uso CFDI- Factura" widget="selection" domain="[('activo','=','true')]" required="1"/>
+                    </group>
+                </field>
+            </field>
+        </record>
+
+</odoo>

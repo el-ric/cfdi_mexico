@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <menuitem id="account.catalogos_sat" name="Catalogos SAT"
+            parent="account.menu_finance" sequence="15" 
+            />
+        <!-- c_aduana -->
+        <record id="view_c_aduana_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_aduana.search.alcomex</field>
+            <field name="model">catalogos.sat.c_aduana</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_aduana" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_aduana.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_aduana</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="c_aduana tree">
+                    <field name="name"/>
+                    <field name="activo"/>
+                    <field name="descripcion"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_c_aduana" model="ir.actions.act_window">
+            <field name="name">Aduanas</field>
+            <field name="res_model">catalogos.sat.c_aduana</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_aduana_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_aduana" id="menu_action_c_aduana" parent="account.catalogos_sat" sequence="1"/>
+        
+        <!-- c_claveprodserv -->
+        <record id="view_c_claveprodserv_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_claveprodserv.search.alcomex</field>
+            <field name="model">catalogos.sat.c_claveprodserv</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_claveprodserv" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_claveprodserv.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_claveprodserv</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="descripcion"/>
+            </field>
+        </record>
+        <record id="action_c_claveprodserv" model="ir.actions.act_window">
+            <field name="name">Productos y servicios</field>
+            <field name="res_model">catalogos.sat.c_claveprodserv</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_claveprodserv_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_claveprodserv" id="menu_action_c_claveprodserv" parent="account.catalogos_sat" sequence="8"/>
+        
+        <!-- c_claveunidad -->
+        <record id="view_c_claveunidad_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_claveunidad.search.alcomex</field>
+            <field name="model">catalogos.sat.c_claveunidad</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_claveunidad" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_claveunidad.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_claveunidad</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="nombre"/>
+            </field>
+        </record>
+        <record id="action_c_claveunidad" model="ir.actions.act_window">
+            <field name="name">Unidades de medida</field>
+            <field name="res_model">catalogos.sat.c_claveunidad</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_claveunidad_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_claveunidad" id="menu_action_c_claveunidad" parent="account.catalogos_sat" sequence="15"/>
+        
+        <!-- c_codigopostal -->
+        <record id="view_c_codigopostal_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_codigopostal.search.alcomex</field>
+            <field name="model">catalogos.sat.c_codigopostal</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_codigopostal" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_codigopostal.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_codigopostal</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="c_Estado"/>
+            </field>
+        </record>
+        <record id="action_c_codigopostal" model="ir.actions.act_window">
+            <field name="name">Codigos postales</field>
+            <field name="res_model">catalogos.sat.c_codigopostal</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_codigopostal_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_codigopostal" id="menu_action_c_codigopostal" parent="account.catalogos_sat" sequence="15"/>
+        
+        <!-- c_formapago -->
+        <record id="view_c_formapago_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_formapago.search.alcomex</field>
+            <field name="model">catalogos.sat.c_formapago</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_formapago" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_formapago.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_formapago</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="descripcion"/>
+            </field>
+        </record>
+        <record id="action_c_formapago" model="ir.actions.act_window">
+            <field name="name">Forma de pago</field>
+            <field name="res_model">catalogos.sat.c_formapago</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_formapago_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_formapago" id="menu_action_c_formapago" parent="account.catalogos_sat" sequence="3"/>
+        
+        <!-- c_impuesto -->
+        <record id="view_c_impuesto_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_impuesto.search.alcomex</field>
+            <field name="model">catalogos.sat.c_impuesto</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_impuesto" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_impuesto.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_impuesto</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="descripcion"/>
+            </field>
+        </record>
+        <record id="action_c_impuesto" model="ir.actions.act_window">
+            <field name="name">Impuestos</field>
+            <field name="res_model">catalogos.sat.c_impuesto</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_impuesto_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_impuesto" id="menu_action_c_impuesto" parent="account.catalogos_sat" sequence="4"/>
+        
+        <!-- c_metodopago -->
+        <record id="view_c_metodopago_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_metodopago.search.alcomex</field>
+            <field name="model">catalogos.sat.c_metodopago</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_metodopago" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_metodopago.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_metodopago</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="descripcion"/>
+            </field>
+        </record>
+        <record id="action_c_metodopago" model="ir.actions.act_window">
+            <field name="name">Metodo de pago</field>
+            <field name="res_model">catalogos.sat.c_metodopago</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_metodopago_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_metodopago" id="menu_action_c_metodopago" parent="account.catalogos_sat" sequence="5"/>
+        
+        <!-- c_moneda -->
+        <record id="view_c_moneda_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_moneda.search.alcomex</field>
+            <field name="model">catalogos.sat.c_moneda</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_moneda" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_moneda.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_moneda</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="descripcion"/>
+            </field>
+        </record>
+        <record id="action_c_moneda" model="ir.actions.act_window">
+            <field name="name">Moneda</field>
+            <field name="res_model">catalogos.sat.c_moneda</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_moneda_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_moneda" id="menu_action_c_moneda" parent="account.catalogos_sat" sequence="6"/>
+        
+        
+        <!-- c_numpedimentoaduana -->
+        <record id="view_c_numpedimentoaduana_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_numpedimentoaduana.search.alcomex</field>
+            <field name="model">catalogos.sat.c_numpedimentoaduana</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_numpedimentoaduana" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_numpedimentoaduana.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_numpedimentoaduana</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+            </field>
+        </record>
+        <record id="action_c_numped" model="ir.actions.act_window">
+            <field name="name">Numero de pedimento aduana</field>
+            <field name="res_model">catalogos.sat.c_numpedimentoaduana</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_numpedimentoaduana_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_numped" id="menu_action_c_numpedimentoaduana" parent="account.catalogos_sat" sequence="7"/>
+        
+        <!-- c_patenteaduanal -->
+        <record id="view_c_patenteaduanal_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_patenteaduanal.search.alcomex</field>
+            <field name="model">catalogos.sat.c_patenteaduanal</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_patenteaduanal" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_patenteaduanal.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_patenteaduanal</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+            </field>
+        </record>
+        <record id="action_c_patenteaduanal" model="ir.actions.act_window">
+            <field name="name">Patente Aduanal</field>
+            <field name="res_model">catalogos.sat.c_patenteaduanal</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_patenteaduanal_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_patenteaduanal" id="menu_action_c_patenteaduanal" parent="account.catalogos_sat" sequence="7"/>
+        
+        <!-- c_regimenfiscal -->
+        <record id="view_c_regimenfiscal_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_regimenfiscal.search.alcomex</field>
+            <field name="model">catalogos.sat.c_regimenfiscal</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_regimenfiscal" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_regimenfiscal.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_regimenfiscal</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="descripcion"/>
+            </field>
+        </record>
+        <record id="action_c_regimenfiscal" model="ir.actions.act_window">
+            <field name="name">Regimen Fiscal</field>
+            <field name="res_model">catalogos.sat.c_regimenfiscal</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_regimenfiscal_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_regimenfiscal" id="menu_action_c_regimenfiscal" parent="account.catalogos_sat" sequence=""/>
+        
+        <!-- c_tipodecomprobante -->
+        <record id="view_c_tipodecomprobante_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_tipodecomprobante.search.alcomex</field>
+            <field name="model">catalogos.sat.c_tipodecomprobante</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_tipodecomprobante" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_tipodecomprobante.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_tipodecomprobante</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="descripcion"/>
+            </field>
+        </record>
+        <record id="action_c_tipodecomprobante" model="ir.actions.act_window">
+            <field name="name">Tipo de comprobante</field>
+            <field name="res_model">catalogos.sat.c_tipodecomprobante</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_tipodecomprobante_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_tipodecomprobante" id="menu_action_c_tipodecomprobante" parent="account.catalogos_sat" sequence="15"/>
+        
+        <!-- c_tipofactor -->
+        <record id="view_c_tipofactor_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_tipofactor.search.alcomex</field>
+            <field name="model">catalogos.sat.c_tipofactor</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_tipofactor" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_tipofactor.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_tipofactor</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+            </field>
+        </record>
+        <record id="action_c_tipofactor" model="ir.actions.act_window">
+            <field name="name">Tipo factor</field>
+            <field name="res_model">catalogos.sat.c_tipofactor</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_tipofactor_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_tipofactor" id="menu_action_c_tipofactor" parent="account.catalogos_sat" sequence="15"/>
+        
+        <!-- c_tiporelacion -->
+        <record id="view_c_tiporelacion_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_tiporelacion.search.alcomex</field>
+            <field name="model">catalogos.sat.c_tiporelacion</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_tiporelacion" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_tiporelacion.tree.alcomex</field>
+            <field name="model">catalogos.sat.c_tiporelacion</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="descripcion"/>
+            </field>
+        </record>
+        <record id="action_c_tiporelacion" model="ir.actions.act_window">
+            <field name="name">Tipo relacion</field>
+            <field name="res_model">catalogos.sat.c_tiporelacion</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_tiporelacion_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_tiporelacion" id="menu_action_c_tiporelacion" parent="account.catalogos_sat" sequence="15"/>
+        
+        <!-- c_usocfdi -->
+        <record id="view_c_usocfdi_filter" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_usocfdi.search.solvmex</field>
+            <field name="model">catalogos.sat.c_usocfdi</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Busqueda">
+                    <filter icon="terp-check" string="Activo" domain="[('activo','=',('true'))]"/>
+                    <field name="name"/>
+
+               </search>
+            </field>
+        </record>
+        <record id="tree_c_usocfdi" model="ir.ui.view">
+            <field name="name">catalogos.sat.c_usocfdi.tree.solvmex</field>
+            <field name="model">catalogos.sat.c_usocfdi</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name"/>
+                <field name="activo"/>
+                <field name="descripcion"/>
+            </field>
+        </record>
+        <record id="action_c_usocfdi" model="ir.actions.act_window">
+            <field name="name">Uso CFDI</field>
+            <field name="res_model">catalogos.sat.c_usocfdi</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_c_usocfdi_filter"/>
+            <field eval="False" name="view_id"/>
+        </record>
+        <menuitem action="action_c_usocfdi" id="menu_action_c_usocfdi" parent="account.catalogos_sat" sequence="15"/>
+
+</odoo>

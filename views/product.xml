@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding='ISO-8859-1' ?>
+<odoo>
+    <record id="view_product_product_alcomex_sat" model="ir.ui.view">
+            <field name="name">product.template.form.alcomex</field>
+            <field name="model">product.template</field>
+            <field name="priority">1</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <page name="sales" position="after">
+                     <page string="SAT" name="sat">
+                     <group>
+                        <field name="c_claveprodserv" string="Productos y servicios SAT" widget="selection" domain="[('activo','=','true')]" required="1"/>
+                    </group>
+                    </page>
+                </page>
+            </field>
+    </record>
+    
+    
+    <record id="view_product_uom_alcomex_sat" model="ir.ui.view">
+            <field name="name">product.uom.form.alcomex</field>
+            <field name="model">product.uom</field>
+            <field name="type">form</field>
+            <field name="priority">1</field>
+            <field name="inherit_id" ref="product.product_uom_form_view"/>
+            <field name="arch" type="xml">
+            <xpath expr="//group/field[@name='active']" position="after">
+                    <field name="c_claveunidad" string="Catalogo unidades de medida SAT" widget="selection" domain="[('activo','=','true')]" required="1"/>
+
+                </xpath>
+            </field>
+    </record>
+
+</odoo>

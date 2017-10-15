@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding='ISO-8859-1' ?>
+<odoo>
+
+    <record id="view_res_partner_sat" model="ir.ui.view">
+            <field name="name">res.partner.sat</field>
+            <field name="model">res.partner</field>
+            <field name="type">form</field>
+            <field name="priority">1</field>
+            <field name="inherit_id" ref="base_vat.view_partner_form"/>
+            <field name="arch" type="xml">
+                <page name="accounting" position="after">
+                    <page string="SAT" name="sat">
+                    <group>
+                        <field name="c_formapago" string="Forma de pago - Defecto" widget="selection" domain="[('activo','=','true')]" required="1"/>
+                        <field name="c_metodopago" string="Método de pago - Defecto" widget="selection" domain="[('activo','=','true')]" required="1"/>
+                        <field name="c_usocfdi" string="Uso CFDI- Defecto" widget="selection" domain="[('activo','=','true')]" required="1"/>
+                        <field name="c_regimenfiscal" string="Regimen fiscal SAT- Defecto" widget="selection" domain="[('activo','=','true')]" required="1"/>
+                        <field name="c_codigopostal" string="Codigo Postal SAT- Defecto"  domain="[('activo','=','true')]" required="1"/>
+                     </group>
+                    </page>
+                </page>
+            </field>
+        </record>
+
+</odoo>
