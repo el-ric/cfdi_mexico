@@ -93,7 +93,7 @@ class AccountInvoice(models.Model):
         req = urllib2.Request(url,data,header)
         
         try: r = urllib2.urlopen(req,context=ctx)
-        except urllib.error.URLError as e:
+        except urllib2.URLError as e:
             raise Warning(_(''.join(['Error al obtener PDF: ', e.reason])))
             print("ERROR")
             print(e.reason)
@@ -134,7 +134,7 @@ class AccountInvoice(models.Model):
         req = urllib2.Request(url,data,header)
         
         try: r = urllib2.urlopen(req,context=ctx)
-        except urllib.error.URLError as e:
+        except urllib2.URLError as e:
             raise Warning(_(''.join(['Error al obtener PDF: ', e.reason])))
             print("ERROR")
             print(e.reason)
@@ -182,7 +182,7 @@ class AccountInvoice(models.Model):
         self.guardar_archivo(data,''.join([carpetas['xml'],'/XMLCancelacion-',nombre_archivo_factura,'.xml']),"wb")
 
         try: r = urllib2.urlopen(req,context=ctx)
-        except urllib2.error.URLError as e:
+        except urllib2.URLError as e:
             raise Warning(_(''.join(['Error al obtener PDF: ', e.reason])))
             print("ERROR")
             print(e.reason)
@@ -225,7 +225,7 @@ class AccountInvoice(models.Model):
         req = urllib2.Request(url,data,header)
         
         try: r = urllib2.urlopen(req,context=ctx)
-        except urllib.error.URLError as e:
+        except urllib2.URLError as e:
             raise Warning(_(''.join(['Error al obtener PDF: ', e.reason])))
             print("ERROR")
             print(e.reason)

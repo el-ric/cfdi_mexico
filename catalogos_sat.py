@@ -24,14 +24,14 @@ class catalogos_sat_base(models.Model):
 
 class c_aduana(models.Model):
     _name = "catalogos.sat.c_aduana"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_aduana"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='Clave Aduana', size=3)
 
 class c_claveprodserv(models.Model):
 
     _name = "catalogos.sat.c_claveprodserv"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_claveprodserv"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_ClaveProdServ', size=10)
     FechaInicioVigencia =  fields.Date(string='Fecha inicio de vigencia')
@@ -49,7 +49,7 @@ class c_claveunidad(models.Model):
             res.append((record.id, name))
         return res
     _name = "catalogos.sat.c_claveunidad"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_claveunidad"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_ClaveUnidad', size=10)
     nombre =  fields.Char(string='Nombre', size=200)
@@ -61,7 +61,7 @@ class c_claveunidad(models.Model):
 class c_codigopostal(models.Model):
 
     _name = "catalogos.sat.c_codigopostal"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_codigopostal"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_CodigoPostal', size=10)
     c_Estado =  fields.Char(string='Estado', size=3)
@@ -70,7 +70,7 @@ class c_codigopostal(models.Model):
 
 class c_formapago(models.Model):
     _name = "catalogos.sat.c_formapago"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_formapago"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_FormaPago', size=2)
     Bancarizado =  fields.Char(string='Bancarizado', size=10)
@@ -102,7 +102,7 @@ class c_impuesto(models.Model):
 
 class c_metodopago(models.Model):
     _name = "catalogos.sat.c_metodopago"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_metodopago"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_MetodoPago', size=3)
     FechaInicioVigencia =  fields.Date(string='Fecha inicio de vigencia')
@@ -110,7 +110,7 @@ class c_metodopago(models.Model):
 
 class c_moneda(models.Model):
     _name = "catalogos.sat.c_moneda"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_moneda"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_Moneda', size=3)
     decimales =  fields.Integer(string='Decimales')
@@ -121,7 +121,7 @@ class c_moneda(models.Model):
 
 class c_numpedimentoaduana(models.Model):
     _name = "catalogos.sat.c_numpedimentoaduana"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_numpedimentoaduana"
     _inherit = "catalogos.sat.base"
     name =  fields.Integer(string='c_numpedimentoaduana')
     patente =  fields.Integer(string='patente')
@@ -132,7 +132,7 @@ class c_numpedimentoaduana(models.Model):
 
 class c_patenteaduanal(models.Model):
     _name = "catalogos.sat.c_patenteaduanal"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_patenteaduanal"
     _inherit = "catalogos.sat.base"
     name =  fields.Integer(string='c_PatenteAduanal')
     FechaInicioVigencia =  fields.Date(string='Fecha inicio de vigencia')
@@ -140,7 +140,7 @@ class c_patenteaduanal(models.Model):
 
 class c_regimenfiscal(models.Model):
     _name = "catalogos.sat.c_regimenfiscal"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_regimenfiscal"
     _inherit = "catalogos.sat.base"
     name =  fields.Integer(string='c_RegimenFiscal')
     personaFisica =  fields.Boolean(string='Aplica persona fisica')
@@ -150,7 +150,7 @@ class c_regimenfiscal(models.Model):
 
 class c_tipodecomprobante(models.Model):
     _name = "catalogos.sat.c_tipodecomprobante"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_tipodecomprobante"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_TipoDeComprobante', size=1)
     valorMaximo =  fields.Float(string='Valor maximo')
@@ -159,13 +159,13 @@ class c_tipodecomprobante(models.Model):
 
 class c_tipofactor(models.Model):
     _name = "catalogos.sat.c_tipofactor"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_tipofactor"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_TipoFactor', size=10)
 
 class c_tiporelacion(models.Model):
     _name = "catalogos.sat.c_tiporelacion"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_tiporelacion"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_TipoRelacion', size=2)
     FechaInicioVigencia =  fields.Date(string='Fecha inicio de vigencia')
@@ -174,7 +174,7 @@ class c_tiporelacion(models.Model):
 
 class c_usocfdi(models.Model):
     _name = "catalogos.sat.c_usocfdi"
-    _description = "Catalogos oficiales del SAT para emision de CFDI"
+    _description = "Catalogos oficiales del SAT para emision de CFDI c_usocfdi"
     _inherit = "catalogos.sat.base"
     name =  fields.Char(string='c_UsoCFDI', size=5)
     personaFisica =  fields.Boolean(string='Aplica persona fisica')
