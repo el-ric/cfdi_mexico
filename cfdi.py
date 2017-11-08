@@ -279,7 +279,7 @@ class AccountInvoice(models.Model):
             soap_request  = ''.join([soap_request, "    <tes:ClaveProdServ>",str(line.product_id.product_tmpl_id.c_claveprodserv.name),"</tes:ClaveProdServ>"])
             soap_request  = ''.join([soap_request, "    <tes:ClaveUnidad>",str(line.uom_id.c_claveunidad.name),"</tes:ClaveUnidad>"])
             desc = line.name
-            soap_request  = u''.join([soap_request, "    <tes:Descripcion>",str.strip(desc),"</tes:Descripcion>"])
+            soap_request  = u''.join([soap_request, "    <tes:Descripcion>",str.strip(str(desc)),"</tes:Descripcion>"])
             soap_request  = ''.join([soap_request, "    <tes:Importe>",str(line.price_subtotal),"</tes:Importe>"])
             soap_request  = ''.join([soap_request, "    <tes:Impuestos>"])
             soap_request  = ''.join([soap_request, "    <tes:Traslados>"])
