@@ -388,6 +388,7 @@ class AccountInvoice(models.Model):
         if(OperacionExitosa=="true"):
             XML = root[0][0][0][6].text
             self.guardar_archivo(XML,''.join([carpetas['xml'],'/',nombre_archivo_factura,'.xml']),"w")
+            self.guarda_adjunto(nombre_archivo_factura + '.xml',XML,'text/xml' )
             CodigoConfirmacion = root[0][0][0][1].text
             xml_cfdi = ET.fromstring(XML)
             folio = xml_cfdi.attrib['Folio']
