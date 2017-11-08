@@ -39,7 +39,7 @@ class AccountInvoice(models.Model):
     @api.multi
     def guardar_archivo(self,datos,nombre_archivo,modo):
         file = open(nombre_archivo,modo)
-        file.write(datos.encode('utf8'))
+        file.write(datos)
         file.close()
     @api.multi
     def obtener_carpeta_dia(self):
@@ -149,20 +149,20 @@ class AccountInvoice(models.Model):
         company = self.env['res.company'].browse(self.env.user.company_id.id)
         if self.state != 'open':
             raise Warning(_('Factura no validada, no es posible emitir factura electronica.'))
-        soap_request = "<?xml version=\"1.0\"?>"
+        soap_request = "<?xml version=\"1.0\"  encoding=\"utf-8\"?>"
         soap_request = ''.join([soap_request,"<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tes=\"http://schemas.datacontract.org/2004/07/TES.V33.CFDI.Negocios\">"])
         soap_request = ''.join([soap_request,"<soapenv:Header/>"])
         soap_request = ''.join([soap_request,"<soapenv:Body>"])
-        soap_request = ''.join([soap_request,"    <tem:CancelarCFDIs>"])
-        soap_request = ''.join([soap_request,"    <tem:credenciales>"])
-        soap_request = ''.join([soap_request,"    <tes:Cuenta>", company.cuenta_facturacion ,"</tes:Cuenta>"])
-        soap_request = ''.join([soap_request,"    <tes:Password>", company.contrasena_facturacion ,"</tes:Password>"])
-        soap_request = ''.join([soap_request,"    <tes:Usuario>", company.usuario_facturacion ,"</tes:Usuario>"])
-        soap_request = ''.join([soap_request,"    </tem:credenciales>"])
-        soap_request  = ''.join([soap_request, "    <tem:uuids><string>", self.uuid_factura ,"</string></tem:uuids>"])
-        soap_request  = ''.join([soap_request, "    </tem:CancelarCFDIs>"])
-        soap_request  = ''.join([soap_request, "    </soapenv:Body>"])
-        soap_request  = ''.join([soap_request, "    </soapenv:Envelope>"])
+        soap_request = ''.join([soap_request,"<tem:CancelarCFDIs>"])
+        soap_request = ''.join([soap_request,"<tem:credenciales>"])
+        soap_request = ''.join([soap_request,"<tes:Cuenta>", company.cuenta_facturacion ,"</tes:Cuenta>"])
+        soap_request = ''.join([soap_request,"<tes:Password>", company.contrasena_facturacion ,"</tes:Password>"])
+        soap_request = ''.join([soap_request,"<tes:Usuario>", company.usuario_facturacion ,"</tes:Usuario>"])
+        soap_request = ''.join([soap_request,"</tem:credenciales>"])
+        soap_request  = ''.join([soap_request, "<tem:uuids><string>", self.uuid_factura ,"</string></tem:uuids>"])
+        soap_request  = ''.join([soap_request, "</tem:CancelarCFDIs>"])
+        soap_request  = ''.join([soap_request, "</soapenv:Body>"])
+        soap_request  = ''.join([soap_request, "</soapenv:Envelope>"])
         
         url = self.url
         
@@ -177,7 +177,10 @@ class AccountInvoice(models.Model):
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
         req = urllib2.Request(url,data,header)
-        
+        carpetas = self.obtener_carpeta_dia()
+        nombre_archivo_factura = ''.join([str(self.id),"-",self.partner_id.vat])
+        self.guardar_archivo(data,''.join([carpetas['xml'],'/XMLCancelacion-',nombre_archivo_factura,'.xml']),"wb")
+
         try: r = urllib2.urlopen(req,context=ctx)
         except urllib2.error.URLError as e:
             raise Warning(_(''.join(['Error al obtener PDF: ', e.reason])))
@@ -185,7 +188,7 @@ class AccountInvoice(models.Model):
             print(e.reason)
         self.mensaje_cfdi = 'Factura cancelada en PAC'
         self.estado_cfdi = 'cancelado'
-
+        self.obtiene_pdf()
 
     @api.multi
     def obtiene_pdf(self):
@@ -231,15 +234,19 @@ class AccountInvoice(models.Model):
         carpetas = self.obtener_carpeta_dia()
         #nombre_archivo_factura = $numero_factura ."-" .$rfc
         nombre_archivo_factura = ''.join([str(self.id),"-",self.partner_id.vat])
+        self.guardar_archivo(xml_respuesta,''.join([carpetas['xml'],'/XMLpdf-',nombre_archivo_factura,'.xml']),"wb")
         root = ET.fromstring(xml_respuesta)
-        pdf_contenido = base64.b64decode(root[0][0][0][5].text)
-        self.guardar_archivo(pdf_contenido,''.join([carpetas['pdf'],'/PDF-',nombre_archivo_factura,'.pdf']),"wb")
-        #self.guardar_archivo(data,''.join([carpetas['pdf'],'/RequestPDF-',nombre_archivo_factura,'.xml']),"w")
-        self.guarda_adjunto(nombre_archivo_factura + '.pdf',pdf_contenido,'application/x-pdf' )
-        
+        if(root[0][0][0][4].text == 'false'):
+            raise Warning(_(''.join(['Error al obtener PDF: ', root[0][0][0][3].text])))
+        else:
+            pdf_contenido = base64.b64decode(root[0][0][0][5].text)
+            self.guardar_archivo(pdf_contenido,''.join([carpetas['pdf'],'/PDF-',nombre_archivo_factura,'.pdf']),"wb")
+            #self.guardar_archivo(data,''.join([carpetas['pdf'],'/RequestPDF-',nombre_archivo_factura,'.xml']),"w")
+            self.guarda_adjunto(nombre_archivo_factura + '.pdf',pdf_contenido,'application/x-pdf' )
+
     @api.multi
     def hola_cfdi(self):
-        self.emite_cfdi ()
+        self.obtiene_pdf()
     @api.multi
     def emite_cfdi(self):
         company = self.env['res.company'].browse(self.env.user.company_id.id)
@@ -272,8 +279,7 @@ class AccountInvoice(models.Model):
             soap_request  = ''.join([soap_request, "    <tes:ClaveProdServ>",str(line.product_id.product_tmpl_id.c_claveprodserv.name),"</tes:ClaveProdServ>"])
             soap_request  = ''.join([soap_request, "    <tes:ClaveUnidad>",str(line.uom_id.c_claveunidad.name),"</tes:ClaveUnidad>"])
             desc = line.name
-            _logger.info(type(desc))
-            soap_request  = u''.join([soap_request, "    <tes:Descripcion>", desc,"</tes:Descripcion>"])
+            soap_request  = u''.join([soap_request, "    <tes:Descripcion>",str.strip(desc),"</tes:Descripcion>"])
             soap_request  = ''.join([soap_request, "    <tes:Importe>",str(line.price_subtotal),"</tes:Importe>"])
             soap_request  = ''.join([soap_request, "    <tes:Impuestos>"])
             soap_request  = ''.join([soap_request, "    <tes:Traslados>"])
@@ -393,8 +399,9 @@ class AccountInvoice(models.Model):
             self.sello = sello
             self.uuid_factura = uuid
             self.fecha_ultimo_cfdi = fields.Datetime.now()
-            self.obtiene_pdf()
             self.envia_email()
+            self.obtiene_pdf()
+
         else:
             ErrorDetallado = root[0][0][0][2].text
             ErrorGeneral = root[0][0][0][3].text
