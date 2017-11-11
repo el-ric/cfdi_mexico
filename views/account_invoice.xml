@@ -21,7 +21,7 @@
                     
                     <button name="emite_cfdi" type="object" string="Emitir factura electronica" class="oe_highlight" groups="account.group_account_invoice" attrs="{'invisible': [('estado_cfdi', '=', 'valido')]}"/>
                     <button name="envia_email" type="object" string="Renviar XML y PDF por email" groups="account.group_account_invoice" attrs="{'invisible': [('estado_cfdi', '!=', 'valido')]}"/>
-					<button name="action_cancel" type="object" string="Cancela factura en PAC (oficial)" groups="account.group_account_invoice" attrs="{'invisible': [('estado_cfdi', '!=', 'valido')]}"/>
+					<button name="cancelar_cfdi" type="object" string="Cancela factura en PAC (oficial)" groups="account.group_account_invoice" attrs="{'invisible': [('estado_cfdi', '!=', 'valido')]}"/>
                     <button string="Saldo PAC" type="object" name="obtiene_creditos"/>
                  </button >
                 <field name="sent" position="after">
