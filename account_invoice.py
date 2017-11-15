@@ -43,19 +43,19 @@ class AccountInvoice(models.Model):
 			('error','ERROR AL FACTURAR'),
 			('cancelado','Cancelado'),
 			('en_espera','En espera'),]
-		,'CFDI - Estado facturacion', select=True, required=True, default='no_enviado')
-	mensaje_cfdi = fields.Char('Mensaje PAC',readonly=True, size=500, default='')
-	uuid_factura = fields.Char('Folio oficial UUID',readonly=True, size=500, default='')
-	fecha_ultimo_cfdi = fields.Datetime('Fecha ultimo movimiento con PAC')
+		,'CFDI - Estado facturacion', select=True, required=True, default='no_enviado', copy=False)
+	mensaje_cfdi = fields.Char('Mensaje PAC',readonly=True, size=500, default='', copy=False)
+	uuid_factura = fields.Char('Folio oficial UUID',readonly=True, size=500, default='', copy=False)
+	fecha_ultimo_cfdi = fields.Datetime('Fecha ultimo movimiento con PAC', copy=False)
 	amount_to_text =  fields.Char(compute='_get_amount_to_text', method=True,
 		type='char', size=256, string='Amount to Text', store=True,
 		help='Amount of the invoice in letter')
 	c_formapago = fields.Many2one('catalogos.sat.c_formapago', 'Forma de pago SAT',ondelete = 'Cascade')
 	c_metodopago = fields.Many2one('catalogos.sat.c_metodopago', 'Metodo de pago SAT',ondelete = 'Cascade')
 	c_usocfdi = fields.Many2one('catalogos.sat.c_usocfdi', 'Uso CFDI',ondelete = 'Cascade')
-	error_cfdi = fields.Char('Error CFDI',readonly=True, size=5000, default='')
-	error_cfdi_detalle = fields.Char('Error CFDI detalles',readonly=True, size=5000, default='')
-	sello = fields.Text('Sello CFDI',readonly=True, default='')
+	error_cfdi = fields.Char('Error CFDI',readonly=True, size=5000, default='', copy=False)
+	error_cfdi_detalle = fields.Char('Error CFDI detalles',readonly=True, size=5000, default='', copy=False)
+	sello = fields.Text('Sello CFDI',readonly=True, default='', copy=False)
 
 	@api.model
 	def _get_amount_to_text(self):

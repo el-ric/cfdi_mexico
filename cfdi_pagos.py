@@ -25,9 +25,26 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
-class AccountInvoice(models.Model):
-    _inherit = 'account.invoice'
+
+
+class AccountPayment(models.Model):
+    _inherit = 'account.payment'
     array_offset = 0
+    estado_cfdi = fields.Selection([
+            ('no_enviado','No enviado'),
+            ('procesando','Procesando'),
+            ('valido','Factura emitida'),
+            ('error','ERROR AL FACTURAR'),
+            ('cancelado','Cancelado'),
+            ('en_espera','En espera'),]
+        ,'CFDI - Estado facturacion', select=True, required=True, default='no_enviado', copy=False)
+    mensaje_cfdi = fields.Char('Mensaje PAC',readonly=True, size=500, default='', copy=False)
+    uuid_pago = fields.Char('Folio oficial UUID',readonly=True, size=500, default='', copy=False)
+    fecha_ultimo_cfdi = fields.Datetime('Fecha ultimo movimiento con PAC', copy=False)
+    c_formapago = fields.Many2one('catalogos.sat.c_formapago', 'Forma de pago SAT',ondelete = 'Cascade')
+    error_cfdi = fields.Char('Error CFDI',readonly=True, size=5000, default='', copy=False)
+    error_cfdi_detalle = fields.Char('Error CFDI detalles',readonly=True, size=5000, default='', copy=False)
+    sello = fields.Text('Sello CFDI',readonly=True, default='', copy=False)
     
     def obtiene_url(self):
         company = self.env['res.company'].browse(self.env.user.company_id.id)
@@ -47,7 +64,7 @@ class AccountInvoice(models.Model):
         'type': 'binary',
         'datas': base64.encodestring(datos),
         'datas_fname':nombre,
-        'res_model': 'account.invoice',
+        'res_model': 'account.payment',
         'res_id': self.id,
         'mimetype': tipo
         })
@@ -73,8 +90,6 @@ class AccountInvoice(models.Model):
     @api.multi
     def envia_email(self):
         company = self.env['res.company'].browse(self.env.user.company_id.id)
-        if self.state != 'open':
-            raise Warning(_('Factura no validada, no es posible emitir factura electronica.'))
         if not self.partner_id.email:
             self.mensaje_cfdi = ''.join([self.mensaje_cfdi,' - Cliente no cuenta con email registrado'])
             pass
@@ -88,9 +103,9 @@ class AccountInvoice(models.Model):
         soap_request = ''.join([soap_request,"    <tes:Password>", company.contrasena_facturacion ,"</tes:Password>"])
         soap_request = ''.join([soap_request,"    <tes:Usuario>", company.usuario_facturacion ,"</tes:Usuario>"])
         soap_request = ''.join([soap_request,"    </tem:credenciales>"])
-        soap_request  = ''.join([soap_request, "    <tem:uuid>", self.uuid_factura ,"</tem:uuid>"])
+        soap_request  = ''.join([soap_request, "    <tem:uuid>", self.uuid_pago ,"</tem:uuid>"])
         soap_request  = ''.join([soap_request, "    <tem:email>", self.partner_id.email or 'void@mail.com' ,",", company.email_emisor,"</tem:email>"])
-        soap_request  = ''.join([soap_request, "    <tem:titulo>", company.name, " Factura: ", self.number  ,"</tem:titulo>"])
+        soap_request  = ''.join([soap_request, "    <tem:titulo>", company.name, " Pago: ", self.name  ,"</tem:titulo>"])
         soap_request  = ''.join([soap_request, "    </tem:EnviarCFDI>"])
         soap_request  = ''.join([soap_request, "    </soapenv:Body>"])
         soap_request  = ''.join([soap_request, "    </soapenv:Envelope>"])
@@ -120,96 +135,8 @@ class AccountInvoice(models.Model):
         self.mensaje_cfdi = ''.join([self.mensaje_cfdi,' - Email enviado: ', self.partner_id.email or 'void@mail.com', '|', company.email_emisor])
 
     @api.multi
-    def obtiene_creditos(self):
-        company = self.env['res.company'].browse(self.env.user.company_id.id)
-        soap_request = "<?xml version=\"1.0\"?>"
-        soap_request = ''.join([soap_request,"<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tes=\"http://schemas.datacontract.org/2004/07/TES.V33.CFDI.Negocios\">"])
-        soap_request = ''.join([soap_request,"<soapenv:Header/>"])
-        soap_request = ''.join([soap_request,"<soapenv:Body>"])
-        soap_request = ''.join([soap_request,"    <tem:ObtenerNumerosCreditos>"])
-        soap_request = ''.join([soap_request,"    <tem:credenciales>"])
-        soap_request = ''.join([soap_request,"    <tes:Cuenta>", company.cuenta_facturacion ,"</tes:Cuenta>"])
-        soap_request = ''.join([soap_request,"    <tes:Password>", company.contrasena_facturacion ,"</tes:Password>"])
-        soap_request = ''.join([soap_request,"    <tes:Usuario>", company.usuario_facturacion ,"</tes:Usuario>"])
-        soap_request = ''.join([soap_request,"    </tem:credenciales>"])
-        soap_request  = ''.join([soap_request, "    </tem:ObtenerNumerosCreditos>"])
-        soap_request  = ''.join([soap_request, "    </soapenv:Body>"])
-        soap_request  = ''.join([soap_request, "    </soapenv:Envelope>"])
-
-        url = self.obtiene_url()
-        
-        data = soap_request.encode('UTF-8', errors='replace') # data should be bytes
-        header = {"Host":" www.fel.mx",
-                  "Content-Type":"text/xml; charset=UTF-8",
-                  "Content-Length":len(data),
-                  "SOAPAction":"\"http://tempuri.org/IConexionRemota/ObtenerNumerosCreditos\""}
-        
-        #FIX SSL CERTIFICATES
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        req = urllib2.Request(url,data,header)
-        
-        try: r = urllib2.urlopen(req,context=ctx)
-        except urllib2.URLError as e:
-            raise Warning(_(''.join(['Error al obtener PDF: ', e.reason])))
-            print("ERROR")
-            print(e.reason)
-          
-        xml_respuesta = r.read()
-        root = ET.fromstring(xml_respuesta)
-        raise Warning(_(''.join(['Creditos disponibles: ', root[0][0][0][0].text, ' Creditos utilizados:',root[0][0][0][1].text])))
-
-
-    @api.multi
-    def cancelar_cfdi(self):
-        company = self.env['res.company'].browse(self.env.user.company_id.id)
-        if self.state != 'open':
-            raise Warning(_('Factura no validada, no es posible emitir factura electronica.'))
-        soap_request = "<?xml version=\"1.0\"  encoding=\"utf-8\"?>"
-        soap_request = ''.join([soap_request,"<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tes=\"http://schemas.datacontract.org/2004/07/TES.V33.CFDI.Negocios\">"])
-        soap_request = ''.join([soap_request,"<soapenv:Header/>"])
-        soap_request = ''.join([soap_request,"<soapenv:Body>"])
-        soap_request = ''.join([soap_request,"<tem:CancelarCFDIs>"])
-        soap_request = ''.join([soap_request,"<tem:credenciales>"])
-        soap_request = ''.join([soap_request,"<tes:Cuenta>", company.cuenta_facturacion ,"</tes:Cuenta>"])
-        soap_request = ''.join([soap_request,"<tes:Password>", company.contrasena_facturacion ,"</tes:Password>"])
-        soap_request = ''.join([soap_request,"<tes:Usuario>", company.usuario_facturacion ,"</tes:Usuario>"])
-        soap_request = ''.join([soap_request,"</tem:credenciales>"])
-        soap_request  = ''.join([soap_request, "<tem:uuids><tes:uuid>", self.uuid_factura ,"</tes:uuid></tem:uuids>"])
-        soap_request  = ''.join([soap_request, "</tem:CancelarCFDIs>"])
-        soap_request  = ''.join([soap_request, "</soapenv:Body>"])
-        soap_request  = ''.join([soap_request, "</soapenv:Envelope>"])
-        _logger.info('Cancela CFDI')
-        url = self.obtiene_url()
-        data = soap_request.encode('UTF-8', errors='replace') # data should be bytes
-        header = {"Host":" www.fel.mx",
-                  "Content-Type":"text/xml; charset=UTF-8",
-                  "Content-Length":len(data),
-                  "SOAPAction":"\"http://tempuri.org/IConexionRemota/ObtenerPDF\""}
-        #FIX SSL CERTIFICATES
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        req = urllib2.Request(url,data,header)
-        carpetas = self.obtener_carpeta_dia()
-        nombre_archivo_factura = ''.join([str(self.id),"-",self.partner_id.vat])
-        self.guardar_archivo(data,''.join([carpetas['xml'],'/XMLCancelacion-',nombre_archivo_factura,'.xml']),"wb")
-        _logger.info(data)
-        try: r = urllib2.urlopen(req,context=ctx)
-        except urllib2.URLError as e:
-            raise Warning(_(''.join(['Error al cancelar CFDI: ', e.reason])))
-            print("ERROR")
-            print(e.reason)
-        self.mensaje_cfdi = 'Factura cancelada en PAC'
-        self.estado_cfdi = 'cancelado'
-        self.obtiene_pdf()
-
-    @api.multi
     def obtiene_pdf(self):
         company = self.env['res.company'].browse(self.env.user.company_id.id)
-        if self.state != 'open':
-            raise Warning(_('Factura no validada, no es posible emitir factura electronica.'))
         soap_request = "<?xml version=\"1.0\"?>"
         soap_request = ''.join([soap_request,"<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tes=\"http://schemas.datacontract.org/2004/07/TES.V33.CFDI.Negocios\">"])
         soap_request = ''.join([soap_request,"<soapenv:Header/>"])
@@ -220,7 +147,7 @@ class AccountInvoice(models.Model):
         soap_request = ''.join([soap_request,"<tes:Password>", company.contrasena_facturacion ,"</tes:Password>"])
         soap_request = ''.join([soap_request,"<tes:Usuario>", company.usuario_facturacion ,"</tes:Usuario>"])
         soap_request = ''.join([soap_request,"</tem:credenciales>"])
-        soap_request  = ''.join([soap_request, "<tem:uuid>", self.uuid_factura ,"</tem:uuid>"])
+        soap_request  = ''.join([soap_request, "<tem:uuid>", self.uuid_pago ,"</tem:uuid>"])
         soap_request  = ''.join([soap_request, "</tem:ObtenerPDF>"])
         soap_request  = ''.join([soap_request, "</soapenv:Body>"])
         soap_request  = ''.join([soap_request, "</soapenv:Envelope>"])
@@ -255,19 +182,15 @@ class AccountInvoice(models.Model):
             raise Warning(_(''.join(['Error al obtener PDF: ', root[0][0][0][3].text])))
         else:
             pdf_contenido = base64.b64decode(root[0][0][0][5 + self.array_offset].text)
-            self.guardar_archivo(pdf_contenido,''.join([carpetas['pdf'],'/PDF-',nombre_archivo_factura,'.pdf']),"wb")
+            self.guardar_archivo(pdf_contenido,''.join([carpetas['pdf'],'/PDFPago-',nombre_archivo_factura,'.pdf']),"wb")
             #self.guardar_archivo(data,''.join([carpetas['pdf'],'/RequestPDF-',nombre_archivo_factura,'.xml']),"w")
             self.guarda_adjunto(nombre_archivo_factura + '.pdf',pdf_contenido,'application/x-pdf' )
 
     @api.multi
-    def hola_cfdi(self):
-        self.obtiene_pdf()
-    @api.multi
     def emite_cfdi(self):
         company = self.env['res.company'].browse(self.env.user.company_id.id)
-        descuento_total = 0
-        if self.state != 'open':
-            raise Warning(_('Factura no validada, no es posible emitir factura electronica.'))
+        if self.state != 'posted':
+            raise Warning(_('Pago no validada, no es posible emitir factura electronica.'))
         soap_request = "<?xml version=\"1.0\"?>"
         soap_request = u''.join([soap_request,"<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tes=\"http://schemas.datacontract.org/2004/07/TES.V33.CFDI.Negocios\">"]).encode('UTF-8', errors='replace')
         soap_request = u''.join([soap_request,"<soapenv:Header/>"]).encode('UTF-8', errors='replace')
@@ -283,65 +206,57 @@ class AccountInvoice(models.Model):
         
         soap_request = ''.join([soap_request,"<tem:cfdi>"])
 
-        soap_request  = ''.join([soap_request, "<tes:ClaveCFDI>FAC</tes:ClaveCFDI>"])
+        soap_request  = ''.join([soap_request, "<tes:ClaveCFDI>CPA</tes:ClaveCFDI>"])
 
         soap_request  = u''.join([soap_request, "<tes:Conceptos>"])
-         
-        for line in self.invoice_line_ids:
-            soap_request  = u''.join([soap_request, "<tes:ConceptoR>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "<tes:Cantidad>",str(line.quantity),"</tes:Cantidad>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "<tes:ClaveProdServ>",str(line.product_id.product_tmpl_id.c_claveprodserv.name),"</tes:ClaveProdServ>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "<tes:ClaveUnidad>",str(line.uom_id.c_claveunidad.name),"</tes:ClaveUnidad>"]).encode('UTF-8', errors='replace')
-            descuento = (line.price_unit * line.quantity) * (line.discount / 100)
-            descuento_unidad = (line.price_unit) * (1 - (line.discount / 100))
-            descuento_total += descuento
-            desc = line.name
-            if (line.discount > 0):
-                desc = u''.join([desc, ': Descuento aplicado: ', str(line.discount), ' - $', str(descuento)]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "<tes:Descripcion>",str.strip(str(desc)),"</tes:Descripcion>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "<tes:Importe>",str((line.price_subtotal)),"</tes:Importe>"]).encode('UTF-8', errors='replace')
-            
-            #soap_request  = ''.join([soap_request, "<tes:Descuento>",str(descuento),"</tes:Descuento>"])
-            soap_request  = u''.join([soap_request, "<tes:Impuestos>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "<tes:Traslados>"]).encode('UTF-8', errors='replace')
-            for impuestos in line.invoice_line_tax_ids:
-                soap_request  = u''.join([soap_request, "<tes:TrasladoConceptoR>"]).encode('UTF-8', errors='replace')
-                soap_request  = u''.join([soap_request, "<tes:Base>",str(line.price_subtotal),"</tes:Base>"]).encode('UTF-8', errors='replace')
-                soap_request  = u''.join([soap_request, "<tes:Importe>",str(line.price_subtotal * (impuestos.amount / 100 )),"</tes:Importe>"]).encode('UTF-8', errors='replace')
-                soap_request  = u''.join([soap_request, "<tes:Impuesto>002</tes:Impuesto>"]).encode('UTF-8', errors='replace')
-                soap_request  = u''.join([soap_request, "<tes:TasaOCuota>",str( '{0:.6f}'.format(impuestos.amount / 100)),"</tes:TasaOCuota>"]).encode('UTF-8', errors='replace')
-                soap_request  = u''.join([soap_request, "<tes:TipoFactor>Tasa</tes:TipoFactor>"]).encode('UTF-8', errors='replace')
-                soap_request  = u''.join([soap_request, "</tes:TrasladoConceptoR>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "</tes:Traslados>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "</tes:Impuestos>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "<tes:NoIdentificacion>",str(line.product_id.default_code),"</tes:NoIdentificacion>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "<tes:Unidad>",str(line.uom_id.name),"</tes:Unidad>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "<tes:ValorUnitario>",str(descuento_unidad),"</tes:ValorUnitario>"]).encode('UTF-8', errors='replace')
-            soap_request  = u''.join([soap_request, "</tes:ConceptoR>"]).encode('UTF-8', errors='replace')
-        
+        soap_request  = u''.join([soap_request, "<tes:ConceptoR>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:Cantidad>1</tes:Cantidad>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:ClaveProdServ>84111506 </tes:ClaveProdServ>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:ClaveUnidad>ACT</tes:ClaveUnidad>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:Descripcion>Pago</tes:Descripcion>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:Importe>0</tes:Importe>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:ValorUnitario>0</tes:ValorUnitario>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "</tes:ConceptoR>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "</tes:Conceptos>"]).encode('UTF-8', errors='replace')
-        soap_request  = u''.join([soap_request, "<tes:CondicionesDePago>",(self.payment_term_id.name or ''),"</tes:CondicionesDePago>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "<tes:Emisor>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "<tes:Nombre>",company.name,"</tes:Nombre>"]).encode('UTF-8', errors='replace')
-        
         soap_request  = u''.join([soap_request, "<tes:RegimenFiscal>",str(company.c_regimenfiscal.name),"</tes:RegimenFiscal>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "</tes:Emisor>"]).encode('UTF-8', errors='replace')
-        soap_request  = u''.join([soap_request, "<tes:Folio>",str(self.number),"</tes:Folio>"]).encode('UTF-8', errors='replace')
-        soap_request  = u''.join([soap_request, "<tes:FormaPago>",self.c_formapago.name,"</tes:FormaPago>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:Folio>",str(self.name),"</tes:Folio>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "<tes:LugarExpedicion>",str(company.c_codigopostal.name),"</tes:LugarExpedicion>"]).encode('UTF-8', errors='replace')
-        soap_request  = u''.join([soap_request, "<tes:MetodoPago>",str(self.c_metodopago.name),"</tes:MetodoPago>"]).encode('UTF-8', errors='replace')
-        soap_request  = u''.join([soap_request, "<tes:Moneda>",str(self.currency_id.name),"</tes:Moneda>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:Moneda>XXX</tes:Moneda>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "<tes:Receptor>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "<tes:Nombre>",str.strip(str(self.partner_id.name).encode('UTF-8', errors='replace')),"</tes:Nombre>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "<tes:Rfc>",str(self.partner_id.vat),"</tes:Rfc>"]).encode('UTF-8', errors='replace')
-        soap_request  = u''.join([soap_request, "<tes:UsoCFDI>",str(self.c_usocfdi.name),"</tes:UsoCFDI>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:UsoCFDI>P01</tes:UsoCFDI>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "</tes:Receptor>"]).encode('UTF-8', errors='replace')
-        soap_request  = u''.join([soap_request, "<tes:Referencia>A",str(self.number),"</tes:Referencia>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:Referencia>",str(self.communication),"</tes:Referencia>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "<tes:Serie>A</tes:Serie>"]).encode('UTF-8', errors='replace')
-        soap_request  = u''.join([soap_request, "<tes:SubTotal>",str(self.amount_untaxed),"</tes:SubTotal>"]).encode('UTF-8', errors='replace')
-        soap_request  = u''.join([soap_request, "<tes:TipoCambio>1</tes:TipoCambio>"]).encode('UTF-8', errors='replace')
-        #soap_request  = ''.join([soap_request, "<tes:Descuento>",str(descuento_total),"</tes:Descuento>"])
-        soap_request  = u''.join([soap_request, "<tes:Total>",str(self.amount_total),"</tes:Total>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:SubTotal>0</tes:SubTotal>"]).encode('UTF-8', errors='replace')
+        soap_request  = u''.join([soap_request, "<tes:Total>0</tes:Total>"]).encode('UTF-8', errors='replace')
+
+        soap_request  = u''.join([soap_request, "<tes:Pagos>"]).encode('UTF-8', errors='replace')
+        for pago in self.invoice_ids:
+            soap_request  = u''.join([soap_request, "<tes:Pago>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:FechaPago>", str(self.payment_date),"</tes:FechaPago>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:FormaDePagoP>", self.c_formapago.name ,"</tes:FormaDePagoP>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:MonedaP>MXN</tes:MonedaP>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:Monto>", str(self.amount),"</tes:Monto>"]).encode('UTF-8', errors='replace')
+
+            soap_request  = u''.join([soap_request, "<tes:DoctoRelacionado>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:IdDocumento>",str(pago.uuid_factura),"</tes:IdDocumento>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:MonedaDR>MXN</tes:MonedaDR>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:MetodoDePagoDR>", str(pago.c_metodopago.name),"</tes:MetodoDePagoDR>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:NumParcialidad>1</tes:NumParcialidad>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:ImpSaldoAnt>", str(pago.amount_total) ,"</tes:ImpSaldoAnt>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:ImpPagado>", str(self.amount),"</tes:ImpPagado>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "<tes:ImpSaldoInsoluto>0</tes:ImpSaldoInsoluto>"]).encode('UTF-8', errors='replace')
+
+            soap_request  = u''.join([soap_request, "</tes:DoctoRelacionado>"]).encode('UTF-8', errors='replace')
+            soap_request  = u''.join([soap_request, "</tes:Pago>"]).encode('UTF-8', errors='replace')
+
+        soap_request  = u''.join([soap_request, "</tes:Pagos>"]).encode('UTF-8', errors='replace')
+
         soap_request  = u''.join([soap_request, "</tem:cfdi>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "</tem:GenerarCFDI>"]).encode('UTF-8', errors='replace')
         soap_request  = u''.join([soap_request, "</soapenv:Body>"]).encode('UTF-8', errors='replace')
@@ -361,7 +276,7 @@ class AccountInvoice(models.Model):
         req = urllib2.Request(url,data,header)
         carpetas = self.obtener_carpeta_dia()
         nombre_archivo_factura = ''.join([str(self.id),"-",self.partner_id.vat])
-        self.guardar_archivo(data,''.join([carpetas['solicitudes'],'/SolicitudWS-',nombre_archivo_factura,'.xml']),"wb")
+        self.guardar_archivo(data,''.join([carpetas['solicitudes'],'/SolicitudPago-',nombre_archivo_factura,'.xml']),"wb")
 
         try: r = urllib2.urlopen(req,context=ctx)
         except urllib2.URLError as e:
@@ -371,7 +286,7 @@ class AccountInvoice(models.Model):
 
           
         xml_respuesta = r.read()
-        self.guardar_archivo(xml_respuesta,''.join([carpetas['solicitudes'],'/RespuestaWS-',nombre_archivo_factura,'.xml']),"wb")
+        self.guardar_archivo(xml_respuesta,''.join([carpetas['solicitudes'],'/RespuestaPago-',nombre_archivo_factura,'.xml']),"wb")
 
         root = ET.fromstring(xml_respuesta)
         #4 en produccion y 6 en desarrollo
@@ -383,14 +298,12 @@ class AccountInvoice(models.Model):
             self.guardar_archivo(XML,''.join([carpetas['xml'],'/',nombre_archivo_factura,'.xml']),"w")
             self.guarda_adjunto(nombre_archivo_factura + '.xml',XML,'text/xml' )
             xml_cfdi = ET.fromstring(XML)
-            folio = xml_cfdi.attrib['Folio']
             sello = xml_cfdi.attrib['Sello']
-            uuid = xml_cfdi[4][0].attrib['UUID']
-            print('Operacion Exitosa')
+            uuid = xml_cfdi[3][0].attrib['UUID']
+            self.uuid_pago = uuid
             self.estado_cfdi = 'valido'
-            self.mensaje_cfdi = 'Factura emitida'
+            self.mensaje_cfdi = 'Pago emitida'
             self.sello = sello
-            self.uuid_factura = uuid
             self.fecha_ultimo_cfdi = fields.Datetime.now()
             self.envia_email()
             self.obtiene_pdf()

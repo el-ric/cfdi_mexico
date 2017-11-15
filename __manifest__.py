@@ -33,6 +33,7 @@
         'views/res_partner.xml',
         'views/sale_order.xml',
         'views/product.xml',
+        'views/account_payment.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

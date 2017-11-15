@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<odoo>
+
+        <record id="payment_form_cfdi_inherit" model="ir.ui.view">
+            <field name="name">payment.form.cfdi.inherit</field>
+            <field name="model">account.payment</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                <button  name="post" position="after">
+                    
+                    <button name="emite_cfdi" type="object" string="Emitir factura electronica" class="oe_highlight" groups="account.group_account_invoice" attrs="{'invisible': [('estado_cfdi', '=', 'valido')]}"/>
+                    <button name="envia_email" type="object" string="Renviar XML y PDF por email" groups="account.group_account_invoice" attrs="{'invisible': [('estado_cfdi', '!=', 'valido')]}"/>
+
+                 </button >
+                <field name="name" position="after">
+				<field name="estado_cfdi" widget="statusbar" statusbar_visible="no_enviado,procesando,valido" statusbar_colors="{&quot;no_enviado&quot;:&quot;blue&quot;,&quot;procesando&quot;:&quot;orange&quot;,&quot;valido&quot;:&quot;green&quot;}"/>
+				<group colspan="6">
+	
+				
+                    <field name="error_cfdi" colspan="4" readonly="1" string="Error CFDI" attrs="{'invisible': [('estado_cfdi', '!=', 'error')]}"/>
+                    <field name="error_cfdi_detalle" colspan="4" readonly="1" string="Detalle error" attrs="{'invisible': [('estado_cfdi', '!=', 'error')]}"/>
+					<field name="mensaje_cfdi" colspan="4" readonly="1" string="Mensaje CFDI"/>
+                    
+					<field name="fecha_ultimo_cfdi" readonly="1" string="Timbrado PAC"/>
+					<newline/>
+					<field name="uuid_pago" colspan="2" readonly="1" string="UUID"/>
+					<newline/>
+				
+
+					<field name="c_formapago" colspan="2" attrs="{'readonly': [('estado_cfdi', '==', 'valido')]}"  widget="selection" domain="[('activo','=','true')]" required="1"/>
+					</group>
+                </field>
+            </field>
+        </record>
+</odoo>

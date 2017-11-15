@@ -7,3 +7,4 @@ from . import account_invoice
 from . import sale
 from . import product
 from . import cfdi
+from . import cfdi_pagos
