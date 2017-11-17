@@ -29,6 +29,14 @@ class AccountInvoice(models.Model):
     _inherit = 'account.invoice'
     array_offset = 0
     
+    
+    def normalize(self,name):
+        if name[0] == "{":
+            uri, tag = name[1:].split("}")
+            return tag
+        else:
+            return name
+    
     def obtiene_url(self):
         company = self.env['res.company'].browse(self.env.user.company_id.id)
         url_prueba = "https://www.appfacturainteligente.com/CR33TEST/ConexionRemota.svc?WSDL"
@@ -251,10 +259,21 @@ class AccountInvoice(models.Model):
         nombre_archivo_factura = ''.join([str(self.id),"-",self.partner_id.vat])
         self.guardar_archivo(xml_respuesta,''.join([carpetas['xml'],'/XMLpdf-',nombre_archivo_factura,'.xml']),"wb")
         root = ET.fromstring(xml_respuesta)
-        if(root[0][0][0][4 + self.array_offset].text == 'false'):
-            raise Warning(_(''.join(['Error al obtener PDF: ', root[0][0][0][3].text])))
+        for elem in root.getiterator():
+            if(self.normalize(elem.tag) == 'OperacionExitosa'):
+                operacion_exitosa = elem.text
+            if(self.normalize(elem.tag) == 'ErrorDetallado'):
+                ErrorDetallado = elem.text
+            if(self.normalize(elem.tag) == 'ErrorGeneral'):
+                ErrorGeneral = elem.text
+            if(self.normalize(elem.tag) == 'PDF'):
+                PDF = elem.text
+            if(self.normalize(elem.tag) == 'XML'):
+                XML = elem.text
+        if(operacion_exitosa == 'false'):
+            raise Warning(_(''.join(['Error al obtener PDF: ', ErrorDetallado])))
         else:
-            pdf_contenido = base64.b64decode(root[0][0][0][5 + self.array_offset].text)
+            pdf_contenido = base64.b64decode(PDF)
             self.guardar_archivo(pdf_contenido,''.join([carpetas['pdf'],'/PDF-',nombre_archivo_factura,'.pdf']),"wb")
             #self.guardar_archivo(data,''.join([carpetas['pdf'],'/RequestPDF-',nombre_archivo_factura,'.xml']),"w")
             self.guarda_adjunto(nombre_archivo_factura + '.pdf',pdf_contenido,'application/x-pdf' )
@@ -374,12 +393,23 @@ class AccountInvoice(models.Model):
         self.guardar_archivo(xml_respuesta,''.join([carpetas['solicitudes'],'/RespuestaWS-',nombre_archivo_factura,'.xml']),"wb")
 
         root = ET.fromstring(xml_respuesta)
+        for elem in root.getiterator():
+            if(self.normalize(elem.tag) == 'OperacionExitosa'):
+                operacion_exitosa = elem.text
+            if(self.normalize(elem.tag) == 'ErrorDetallado'):
+                ErrorDetallado = elem.text
+            if(self.normalize(elem.tag) == 'ErrorGeneral'):
+                ErrorGeneral = elem.text
+            if(self.normalize(elem.tag) == 'PDF'):
+                PDF = elem.text
+            if(self.normalize(elem.tag) == 'XML'):
+                XML = elem.text
         #4 en produccion y 6 en desarrollo
-        OperacionExitosa = root[0][0][0][4 + self.array_offset].text
+        OperacionExitosa = operacion_exitosa
         _logger.info(self.array_offset)
         _logger.info(OperacionExitosa)
         if(OperacionExitosa=="true"):
-            XML = root[0][0][0][6 + self.array_offset].text
+            #XML = root[0][0][0][6 + self.array_offset].text
             self.guardar_archivo(XML,''.join([carpetas['xml'],'/',nombre_archivo_factura,'.xml']),"w")
             self.guarda_adjunto(nombre_archivo_factura + '.xml',XML,'text/xml' )
             xml_cfdi = ET.fromstring(XML)
@@ -396,8 +426,8 @@ class AccountInvoice(models.Model):
             self.obtiene_pdf()
 
         else:
-            ErrorDetallado = root[0][0][0][2].text
-            ErrorGeneral = root[0][0][0][3].text
+            #ErrorDetallado = root[0][0][0][2].text
+            #ErrorGeneral = root[0][0][0][3].text
             _logger.info('Error en emision de CFDI')
             _logger.info(ErrorGeneral)
             self.error_cfdi = ErrorGeneral
