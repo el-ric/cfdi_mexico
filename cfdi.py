@@ -312,7 +312,7 @@ class AccountInvoice(models.Model):
             soap_request  = u''.join([soap_request, "<tes:ClaveProdServ>",str(line.product_id.product_tmpl_id.c_claveprodserv.name),"</tes:ClaveProdServ>"]).encode('UTF-8', errors='replace')
             soap_request  = u''.join([soap_request, "<tes:ClaveUnidad>",str(line.uom_id.c_claveunidad.name),"</tes:ClaveUnidad>"]).encode('UTF-8', errors='replace')
             descuento = (line.price_unit * line.quantity) * (line.discount / 100)
-            descuento_unidad = (line.price_unit) * (1 - (line.discount / 100))
+            descuento_unidad = round((line.price_unit) * (1 - (line.discount / 100)),4)
             descuento_total += descuento
             desc = line.name
             if (line.discount > 0):
@@ -326,7 +326,7 @@ class AccountInvoice(models.Model):
             for impuestos in line.invoice_line_tax_ids:
                 soap_request  = u''.join([soap_request, "<tes:TrasladoConceptoR>"]).encode('UTF-8', errors='replace')
                 soap_request  = u''.join([soap_request, "<tes:Base>",str(line.price_subtotal),"</tes:Base>"]).encode('UTF-8', errors='replace')
-                soap_request  = u''.join([soap_request, "<tes:Importe>",str(line.price_subtotal * (impuestos.amount / 100 )),"</tes:Importe>"]).encode('UTF-8', errors='replace')
+                soap_request  = u''.join([soap_request, "<tes:Importe>",str(round(line.price_subtotal * (impuestos.amount / 100 ),2)),"</tes:Importe>"]).encode('UTF-8', errors='replace')
                 soap_request  = u''.join([soap_request, "<tes:Impuesto>002</tes:Impuesto>"]).encode('UTF-8', errors='replace')
                 soap_request  = u''.join([soap_request, "<tes:TasaOCuota>",str( '{0:.6f}'.format(impuestos.amount / 100)),"</tes:TasaOCuota>"]).encode('UTF-8', errors='replace')
                 soap_request  = u''.join([soap_request, "<tes:TipoFactor>Tasa</tes:TipoFactor>"]).encode('UTF-8', errors='replace')
