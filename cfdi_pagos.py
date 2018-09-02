@@ -32,9 +32,10 @@ class AccountPayment(models.Model):
     array_offset = 0
     estado_cfdi = fields.Selection([
             ('no_enviado','No enviado'),
+            ('no_requerido','No requerido'),
             ('procesando','Procesando'),
-            ('valido','Factura emitida'),
-            ('error','ERROR AL FACTURAR'),
+            ('valido','Complemento de pago emitido'),
+            ('error','ERROR EN COMPLEMENTO'),
             ('cancelado','Cancelado'),
             ('en_espera','En espera'),]
         ,'CFDI - Estado facturacion', select=True, required=True, default='no_enviado', copy=False)
@@ -65,7 +66,52 @@ class AccountPayment(models.Model):
             _logger.info(self.array_offset)
         return company.api_factura
         
-    
+
+    @api.multi
+    def cancelar_cfdi(self):
+        company = self.env['res.company'].browse(self.env.user.company_id.id)
+        if self.state == 'draft':
+            raise Warning(_('Complemento de pago no validado, no es posible cancelar.'))
+        soap_request = "<?xml version=\"1.0\"  encoding=\"utf-8\"?>"
+        soap_request = ''.join([soap_request,"<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tes=\"http://schemas.datacontract.org/2004/07/TES.V33.CFDI.Negocios\">"])
+        soap_request = ''.join([soap_request,"<soapenv:Header/>"])
+        soap_request = ''.join([soap_request,"<soapenv:Body>"])
+        soap_request = ''.join([soap_request,"<tem:CancelarCFDIs>"])
+        soap_request = ''.join([soap_request,"<tem:credenciales>"])
+        soap_request = ''.join([soap_request,"<tes:Cuenta>", company.cuenta_facturacion ,"</tes:Cuenta>"])
+        soap_request = ''.join([soap_request,"<tes:Password>", company.contrasena_facturacion ,"</tes:Password>"])
+        soap_request = ''.join([soap_request,"<tes:Usuario>", company.usuario_facturacion ,"</tes:Usuario>"])
+        soap_request = ''.join([soap_request,"</tem:credenciales>"])
+        soap_request  = ''.join([soap_request, "<tem:uuids><tes:uuid>", self.uuid_pago ,"</tes:uuid></tem:uuids>"])
+        soap_request  = ''.join([soap_request, "</tem:CancelarCFDIs>"])
+        soap_request  = ''.join([soap_request, "</soapenv:Body>"])
+        soap_request  = ''.join([soap_request, "</soapenv:Envelope>"])
+        _logger.info('Cancela CFDI')
+        url = self.obtiene_url()
+        data = soap_request.encode('UTF-8', errors='replace') # data should be bytes
+        header = {"Host":" www.fel.mx",
+                  "Content-Type":"text/xml; charset=UTF-8",
+                  "Content-Length":len(data),
+                  "SOAPAction":"\"http://tempuri.org/IConexionRemota/ObtenerPDF\""}
+        #FIX SSL CERTIFICATES
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        req = urllib2.Request(url,data,header)
+        carpetas = self.obtener_carpeta_dia()
+        nombre_archivo_factura = ''.join([str(self.id),"-",self.partner_id.vat])
+        self.guardar_archivo(data,''.join([carpetas['xml'],'/XMLCancelacion-',nombre_archivo_factura,'.xml']),"wb")
+        _logger.info(data)
+        try: r = urllib2.urlopen(req,context=ctx)
+        except urllib2.URLError as e:
+            raise Warning(_(''.join(['Error al cancelar CFDI: ', e.reason])))
+            print("ERROR")
+            print(e.reason)
+        self.mensaje_cfdi = 'Complemento cancelado en PAC'
+        self.estado_cfdi = 'cancelado'
+        self.obtiene_pdf()
+
+
     @api.multi
     def guarda_adjunto(self,nombre,datos,tipo):
         self.env['ir.attachment'].create({
